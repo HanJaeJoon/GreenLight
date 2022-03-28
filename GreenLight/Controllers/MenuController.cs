@@ -1,4 +1,5 @@
-﻿using GreenLight.Services;
+﻿using GreenLight.Models;
+using GreenLight.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GreenLight.Api;
@@ -21,11 +22,11 @@ public class MenuController : Controller
     //}
 
     [HttpGet("{date?}")]
-    public async Task<ActionResult<string>> GetAsync(DateTime date)
+    public async Task<ActionResult<InstagramObject>> GetAsync(DateTime date)
     {
-        string? menu = await _menuService.GetAsync(date);
+        var menu = await _menuService.GetAsync(date);
 
-        if (menu == null)
+        if (menu is null)
         {
             return NotFound();
         }

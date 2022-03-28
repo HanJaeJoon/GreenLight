@@ -1,10 +1,11 @@
 ﻿@page
-@model IndexModel
+@model GreenLight.Pages.IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Green Light";
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <img src="@Model.menuInfo.graphql.user.edge_owner_to_timeline_media.edges[0].node.display_url" crossorigin="anonymous" />
+    <p>@Model.menuInfo.graphql.user.edge_owner_to_timeline_media.edges[0].node.accessibility_caption</p>
 </div>

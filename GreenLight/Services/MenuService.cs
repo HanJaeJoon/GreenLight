@@ -1,4 +1,6 @@
-﻿using OpenQA.Selenium;
+﻿using System.Text.Json;
+using GreenLight.Models;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
 namespace GreenLight.Services;
@@ -7,6 +9,7 @@ public class MenuService
 {
     private readonly HttpClient _httpClient;
     private readonly string _instagramId = "green_food_buffet";
+    //private readonly string _instagramId = "green_food_buffet/channel";
 
     public MenuService()
     {
@@ -18,24 +21,13 @@ public class MenuService
     //    return new List<string>();
     //}
 
-    public async Task<string?> GetAsync(DateTime date)
+    public async Task<InstagramObject> GetAsync(DateTime date)
     {
-        string url = $"https://www.instagram.com/{_instagramId}/?a=1";
-
-        //_httpClient.DefaultRequestHeaders.Add("Accept",
-        //    "application/json");
-
-        //HttpResponseMessage response = await _httpClient.GetAsync(url);
-
-        //if (response is null)
-        //{
-        //    return null;
-        //}
-
-        //response.EnsureSuccessStatusCode();
-        //string result = await response.Content.ReadAsStringAsync();
-
+        string url = $"https://www.instagram.com/{_instagramId}/?__a=1";
         string result = string.Empty;
+
+        //ChromeOptions chromeOptions = new ChromeOptions();
+        //chromeOptions.AddArguments("headless");
 
         using (IWebDriver driver = new ChromeDriver())
         {
@@ -45,12 +37,19 @@ public class MenuService
 
             var elements = driver.FindElements(By.CssSelector("body"));
 
-            foreach (var el in elements)
+            try
             {
-                result += el.FindElement(By.CssSelector("pre")).Text.Trim();
+                foreach (var el in elements)
+                {
+                    result += el.FindElement(By.CssSelector("pre")).Text.Trim();
+                }
+            }
+            catch
+            {
+                return new InstagramObject();
             }
         }
 
-        return result;
+        return JsonSerializer.Deserialize<InstagramObject>(result);
     }
 }
