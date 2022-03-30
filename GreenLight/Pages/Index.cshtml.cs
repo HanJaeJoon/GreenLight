@@ -9,7 +9,7 @@ namespace GreenLight.Pages
         private MenuService _menuService;
         private readonly ILogger<IndexModel> _logger;
 
-        public InstagramObject menuInfo = new();
+        public TodayMenu todayMenu = new();
 
         public IndexModel(ILogger<IndexModel> logger, MenuService menuService)
         {
@@ -19,7 +19,7 @@ namespace GreenLight.Pages
 
         public async Task OnGet()
         {
-            menuInfo = await _menuService.GetAsync(DateTime.Today);
+            todayMenu = await _menuService.GetTodayMenuAsync(DateTime.Today);
         }
     }
 }

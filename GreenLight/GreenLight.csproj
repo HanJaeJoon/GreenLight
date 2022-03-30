@@ -16,4 +16,8 @@
     <Folder Include="Pages\Shared\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\data\.gitkeep" />
+  </ItemGroup>
+
 </Project>

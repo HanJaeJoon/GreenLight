@@ -10,26 +10,15 @@ public class MenuController : Controller
 {
     private readonly MenuService _menuService;
 
-    public MenuController()
+    public MenuController(IWebHostEnvironment env)
     {
-        _menuService = new MenuService();
+        _menuService = new MenuService(env);
     }
 
-    //[HttpGet]
-    //public ActionResult GetRecentMenu()
-    //{
-    //    return _menuService.GetRecentMenu();
-    //}
-
     [HttpGet("{date?}")]
-    public async Task<ActionResult<InstagramObject>> GetAsync(DateTime date)
+    public async Task<ActionResult<TodayMenu>> GetAsync(DateTime date)
     {
-        var menu = await _menuService.GetAsync(date);
-
-        if (menu is null)
-        {
-            return NotFound();
-        }
+        var menu = await _menuService.GetTodayMenuAsync(date);
 
         return menu;
     }
