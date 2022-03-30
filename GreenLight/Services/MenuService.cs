@@ -13,6 +13,10 @@ public class MenuService
 
     public MenuService(IWebHostEnvironment env)
     {
+        if (string.IsNullOrWhiteSpace(env.WebRootPath))
+        {
+            env.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        }
         _env = env;
     }
 
@@ -47,25 +51,25 @@ public class MenuService
     {
         string result = string.Empty;
 
-        ChromeOptions chromeOptions = new();
-        chromeOptions.AddArguments("headless");
-
-        using (IWebDriver driver = new ChromeDriver(chromeOptions))
+        try
         {
-            driver.Url = url;
+            ChromeOptions chromeOptions = new();
+            chromeOptions.AddArguments("headless");
 
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-
-            var elements = driver.FindElements(By.CssSelector("body"));
-
-            try
+            using (IWebDriver driver = new ChromeDriver(chromeOptions))
             {
+                driver.Url = url;
+
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+                var elements = driver.FindElements(By.CssSelector("body"));
+
                 result = elements.Aggregate(result, (current, el) => current + el.FindElement(By.CssSelector("pre")).Text.Trim());
             }
-            catch
-            {
-                // ignored
-            }
+        }
+        catch
+        {
+            // ignored
         }
 
         return result;
