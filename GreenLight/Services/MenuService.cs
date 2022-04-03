@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using GreenLight.Models;
+﻿using GreenLight.Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using System.Text.Json;
 
 namespace GreenLight.Services;
 
@@ -17,27 +17,41 @@ public class MenuService
         {
             env.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         }
+
         _env = env;
     }
 
     public async Task<TodayMenu> GetTodayMenuAsync(DateTime date)
     {
-        string instagramData = await LoadDataFromJson(date);
+        string instagramData;
 
-        if (string.IsNullOrWhiteSpace(instagramData))
+        try
         {
-            string url1 = $"https://www.instagram.com/{_instagramId}/?__a=1";
-            instagramData = GetInstagramData(url1);
+            instagramData = await LoadDataFromJson(date);
 
             if (string.IsNullOrWhiteSpace(instagramData))
             {
-                string url2 = $"https://www.instagram.com/{_instagramId}/channel/?__a=1";
-                instagramData = GetInstagramData(url2);
+                string url1 = $"https://www.instagram.com/{_instagramId}/?__a=1";
+                instagramData = GetInstagramData(url1);
+
+                if (string.IsNullOrWhiteSpace(instagramData))
+                {
+                    string url2 = $"https://www.instagram.com/{_instagramId}/channel/?__a=1";
+                    instagramData = GetInstagramData(url2);
+                }
+
+                SaveDataAsFile(date, instagramData);
             }
-
-            SaveDataAsFile(date, instagramData);
         }
+        catch (Exception e)
+        {
 
+            return new TodayMenu
+            {
+                Menu = e.Message,
+                MenuPhotoUrl = "#",
+            };
+        }
         InstagramObject? instagramObject = JsonSerializer.Deserialize<InstagramObject>(instagramData);
 
         return new TodayMenu
