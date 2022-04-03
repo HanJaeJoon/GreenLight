@@ -8,7 +8,7 @@ namespace GreenLight.Services;
 public class MenuService
 {
     private readonly IWebHostEnvironment _env;
-    private readonly string _instagramId = "green_food_buffet";
+    private readonly string _instagramId = "jaejoon_h";
 
 
     public MenuService(IWebHostEnvironment env)
