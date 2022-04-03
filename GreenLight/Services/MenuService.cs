@@ -49,7 +49,7 @@ public class MenuService
         };
     }
 
-    private async Task<string> GetInstagramDataAsync(string url)
+    private static async Task<string> GetInstagramDataAsync(string url)
     {
         string result = string.Empty;
 
@@ -60,10 +60,6 @@ public class MenuService
             var document = await context.OpenAsync(url);
 
             await document.WaitForReadyAsync();
-
-            string path = Path.Combine(_env.WebRootPath, "data");
-
-            _ = File.WriteAllTextAsync(Path.Combine(path, $"raw.json"), document.ToHtml());
 
             var preList = document.QuerySelectorAll("pre");
 
