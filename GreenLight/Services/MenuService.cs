@@ -1,4 +1,6 @@
 ﻿using AngleSharp;
+using AngleSharp.Dom;
+using AngleSharp.Io;
 using GreenLight.Models;
 using System.Text.Json;
 
@@ -53,9 +55,11 @@ public class MenuService
 
         try
         {
-            var config = Configuration.Default.WithDefaultLoader();
+            var config = Configuration.Default.WithDefaultLoader(new LoaderOptions { IsResourceLoadingEnabled = true });
             var context = BrowsingContext.New(config);
             var document = await context.OpenAsync(url);
+
+            await document.WaitForReadyAsync();
 
             var preList = document.QuerySelectorAll("pre");
 
