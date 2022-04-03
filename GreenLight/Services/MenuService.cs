@@ -1,7 +1,6 @@
-﻿using AngleSharp;
-using AngleSharp.Dom;
-using AngleSharp.Io;
-using GreenLight.Models;
+﻿using GreenLight.Models;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using System.Text.Json;
 
 namespace GreenLight.Services;
@@ -29,15 +28,26 @@ public class MenuService
         if (string.IsNullOrWhiteSpace(instagramData))
         {
             string url1 = $"https://www.instagram.com/{_instagramId}/?__a=1";
-            instagramData = await GetInstagramDataAsync(url1);
+            instagramData = GetInstagramData(url1);
 
             if (string.IsNullOrWhiteSpace(instagramData))
             {
                 string url2 = $"https://www.instagram.com/{_instagramId}/channel/?__a=1";
-                instagramData = await GetInstagramDataAsync(url2);
+                instagramData = GetInstagramData(url2);
             }
 
-            SaveDataAsFile(date, instagramData);
+            if (!string.IsNullOrWhiteSpace(instagramData))
+            {
+                SaveDataAsFile(date, instagramData);
+            }
+            else
+            {
+                return new TodayMenu
+                {
+                    Menu = instagramData,
+                    MenuPhotoUrl = "#",
+                };
+            }
         }
 
         InstagramObject? instagramObject = JsonSerializer.Deserialize<InstagramObject>(instagramData);
@@ -49,23 +59,51 @@ public class MenuService
         };
     }
 
-    private static async Task<string> GetInstagramDataAsync(string url)
+    //private static async Task<string> GetInstagramDataAsync(string url)
+    //{
+    //    string result = string.Empty;
+
+    //    try
+    //    {
+    //        var config = Configuration.Default.WithDefaultLoader(new LoaderOptions { IsResourceLoadingEnabled = true });
+    //        var context = BrowsingContext.New(config);
+    //        var document = await context.OpenAsync(url);
+
+    //        await document.WaitForReadyAsync();
+
+    //        var preList = document.QuerySelectorAll("pre");
+
+    //        foreach (var item in preList)
+    //        {
+    //            result += item.InnerHtml;
+    //        }
+    //    }
+    //    catch
+    //    {
+    //        // ignored
+    //    }
+
+    //    return result;
+    //}
+
+    private static string GetInstagramData(string url)
     {
         string result = string.Empty;
 
         try
         {
-            var config = Configuration.Default.WithDefaultLoader(new LoaderOptions { IsResourceLoadingEnabled = true });
-            var context = BrowsingContext.New(config);
-            var document = await context.OpenAsync(url);
+            ChromeOptions chromeOptions = new();
+            chromeOptions.AddArguments("headless");
 
-            await document.WaitForReadyAsync();
-
-            var preList = document.QuerySelectorAll("pre");
-
-            foreach (var item in preList)
+            using (IWebDriver driver = new ChromeDriver(chromeOptions))
             {
-                result += item.InnerHtml;
+                driver.Url = url;
+
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+                var elements = driver.FindElements(By.CssSelector("body"));
+
+                result = elements.Aggregate(result, (current, el) => current + el.FindElement(By.CssSelector("pre")).Text.Trim());
             }
         }
         catch
