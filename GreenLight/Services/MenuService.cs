@@ -1,6 +1,5 @@
-﻿using GreenLight.Models;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
+﻿using AngleSharp;
+using GreenLight.Models;
 using System.Text.Json;
 
 namespace GreenLight.Services;
@@ -28,12 +27,12 @@ public class MenuService
         if (string.IsNullOrWhiteSpace(instagramData))
         {
             string url1 = $"https://www.instagram.com/{_instagramId}/?__a=1";
-            instagramData = GetInstagramData(url1);
+            instagramData = await GetInstagramDataAsync(url1);
 
             if (string.IsNullOrWhiteSpace(instagramData))
             {
                 string url2 = $"https://www.instagram.com/{_instagramId}/channel/?__a=1";
-                instagramData = GetInstagramData(url2);
+                instagramData = await GetInstagramDataAsync(url2);
             }
 
             SaveDataAsFile(date, instagramData);
@@ -48,24 +47,21 @@ public class MenuService
         };
     }
 
-    private static string GetInstagramData(string url)
+    private static async Task<string> GetInstagramDataAsync(string url)
     {
         string result = string.Empty;
 
         try
         {
-            ChromeOptions chromeOptions = new();
-            chromeOptions.AddArguments("headless");
+            var config = Configuration.Default.WithDefaultLoader();
+            var context = BrowsingContext.New(config);
+            var document = await context.OpenAsync(url);
 
-            using (IWebDriver driver = new ChromeDriver(chromeOptions))
+            var preList = document.QuerySelectorAll("pre");
+
+            foreach (var item in preList)
             {
-                driver.Url = url;
-
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-
-                var elements = driver.FindElements(By.CssSelector("body"));
-
-                result = elements.Aggregate(result, (current, el) => current + el.FindElement(By.CssSelector("pre")).Text.Trim());
+                result += item.InnerHtml;
             }
         }
         catch
