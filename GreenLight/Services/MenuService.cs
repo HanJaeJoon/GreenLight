@@ -23,35 +23,22 @@ public class MenuService
 
     public async Task<TodayMenu> GetTodayMenuAsync(DateTime date)
     {
-        string instagramData;
+        string instagramData = await LoadDataFromJson(date);
 
-        try
+        if (string.IsNullOrWhiteSpace(instagramData))
         {
-            instagramData = await LoadDataFromJson(date);
+            string url1 = $"https://www.instagram.com/{_instagramId}/?__a=1";
+            instagramData = GetInstagramData(url1);
 
             if (string.IsNullOrWhiteSpace(instagramData))
             {
-                string url1 = $"https://www.instagram.com/{_instagramId}/?__a=1";
-                instagramData = GetInstagramData(url1);
-
-                if (string.IsNullOrWhiteSpace(instagramData))
-                {
-                    string url2 = $"https://www.instagram.com/{_instagramId}/channel/?__a=1";
-                    instagramData = GetInstagramData(url2);
-                }
-
-                SaveDataAsFile(date, instagramData);
+                string url2 = $"https://www.instagram.com/{_instagramId}/channel/?__a=1";
+                instagramData = GetInstagramData(url2);
             }
-        }
-        catch (Exception e)
-        {
 
-            return new TodayMenu
-            {
-                Menu = e.Message,
-                MenuPhotoUrl = "#",
-            };
+            SaveDataAsFile(date, instagramData);
         }
+
         InstagramObject? instagramObject = JsonSerializer.Deserialize<InstagramObject>(instagramData);
 
         return new TodayMenu
@@ -96,9 +83,9 @@ public class MenuService
         File.WriteAllTextAsync(Path.Combine(path, $"{date:yyyy-MM-dd}.json"), result);
     }
 
-    private async Task<string> LoadDataFromJson(DateTime startDate)
+    private async Task<string> LoadDataFromJson(DateTime date)
     {
-        string path = Path.Combine(_env.WebRootPath, $"data/{startDate:yyyy-MM-dd}.json");
+        string path = Path.Combine(_env.WebRootPath, $"data/{date:yyyy-MM-dd}.json");
 
         if (!File.Exists(path))
         {
